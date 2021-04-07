@@ -1,0 +1,10 @@
+These are the openHAB temperature icon converted to dynamic icons.
+Currently, only Farenheit icons are present but the Celsius set is
+in progress (though see below).
+
+Note that openHAB cannot usnegative numbers for dynamic items (yet).
+This is an issue for the Celsius scale since users are more likely to
+see negative temperatures. This can be solved by using expressions
+to select the correct icon name explicitly rather than using openHAB's
+built-in dynamic selection feature.
+

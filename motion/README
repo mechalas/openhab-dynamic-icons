@@ -1,0 +1,5 @@
+This is the the standard openHAB motion icon copied to a -on and -off
+suffixes so that they will work with bindings that return ON and OFF
+for motion sensors instead of OPEN and CLOSED (e.g. the Hue binding
+returns ON and OFF for Hue motion sensors).
+
