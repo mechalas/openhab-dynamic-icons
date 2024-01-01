@@ -1,0 +1,115 @@
+#! /usr/bin/python3
+
+import argparse
+import sys
+
+default_inc= {
+	'hue': 30,
+	'saturation': 25,
+	'value': 10
+}
+
+#----------------------------------------
+# Convert HSB to RGB
+#----------------------------------------
+
+def hsb2rgb(hue, sat, bri):
+	if hue == 360:
+		hue= 0
+	
+	s= sat/100
+	v= bri/100
+
+	c= v*s
+	x= c*(1 - abs((hue/60)%2-1))
+	m= v-c
+
+	if hue < 60:
+		rp= c
+		gp= x
+		bp= 0
+	elif hue < 120:
+		rp= x
+		gp= c
+		bp= 0
+	elif hue < 180:
+		rp= 0
+		gp= c
+		bp= x
+	elif hue < 240:
+		rp= 0
+		gp= x
+		bp= c
+	elif hue < 300:
+		rp= x
+		gp= 0
+		bp= c
+	else:
+		rp= c
+		gp= 0
+		bp= x
+
+	return(round(255*(rp+m)), round(255*(gp+m)), round(255*(bp+m)))
+
+#----------------------------------------------------------------------
+# Main program starts here.
+#----------------------------------------------------------------------
+
+parser= argparse.ArgumentParser(description='Generate xHxSxB color icons. The source SVG icon\'s "on" color should be #ffc84d with opacity 0.99.')
+parser.add_argument('-H', '--hue-increment', type=int,
+	help=f'Hue increment in degrees. Must be a proper divisor of 360. Default increment is {default_inc["hue"]}')
+parser.add_argument('-S', '--saturation-increment', type=int,
+	help=f'Saturation increment. Must be a proper divisor of 100. Default increment is {default_inc["saturation"]}')
+parser.add_argument('-V', '--value-increment', type=int,
+	help=f'Value increment. Must be a proper divisor of 100. Default increment is {default_inc["value"]}')
+parser.add_argument('file', nargs='+', help='The source SVG file(s) to process')
+
+args= parser.parse_args()
+
+ihue= default_inc['hue']
+isat= default_inc['saturation']
+ival= default_inc['value']
+
+if args.hue_increment:
+	ihue= args.hue_increment
+
+if args.saturation_increment:
+	isat= args.saturation_increment
+
+if args.value_increment:
+	ival= args.value_increment
+
+if ihue < 0 or ihue > 360 or 360 % ihue:
+	print('hue increment must be a proper divisor of 360', file=sys.stderr)
+	exit(1)
+
+if isat < 0 or isat > 100 or 100 % isat:
+	print('saturation increment must be a proper divisor of 100',
+		file=sys.stderr)
+	exit(1)
+
+if ival < 0 or ival > 100 or 100 % ival:
+	print('value increment must be a proper divisor of 100', file=sys.stderr)
+	exit(1)
+
+subscolor= '#ffc84d'
+
+for filename in args.file:
+	fp= open(filename, 'r')
+	data= fp.read()
+	fp.close()
+
+	basename= filename.replace('.svg', '')
+
+	for hue in range(0, 360+ihue, ihue):
+		for sat in range(0, 100+isat, isat):
+			for bri in range(0, 100+ival, ival):
+				rgb= hsb2rgb(hue, sat, 100)
+				rgbs= '#{:02x}{:02x}{:02x}'.format(*rgb)
+				opacity= bri/100
+
+				newfile= '{:s}x{:d}x{:d}x{:d}.svg'.format(basename, hue, sat, bri)
+				wfp= open(newfile, 'w')
+				wfp.write(data.replace('g opacity="0.99"', 'g opacity="{:.2f}"'.format(opacity)).replace(subscolor, rgbs))
+				wfp.close()
+

@@ -1,0 +1,54 @@
+#!/usr/bin/python3
+
+default_inc= {
+	'hue': 30,
+	'saturation': 25,
+	'value': 10
+}
+
+import argparse
+import sys
+
+parser = argparse.ArgumentParser(description='Create an icon expression for a color icon.')
+parser.add_argument('-H', '--hue-increment', type=int,
+        help=f'Hue increment in degrees. Must be a proper divisor of 360. Default increment is {default_inc["hue"]}')
+parser.add_argument('-S', '--saturation-increment', type=int,
+        help=f'Saturation increment. Must be a proper divisor of 100. Default increment is {default_inc["saturation"]}')
+parser.add_argument('-V', '--value-increment', type=int,
+        help=f'Value increment. Must be a proper divisor of 100. Default increment is {default_inc["value"]}')
+parser.add_argument('item', help='The color channel item name.')
+parser.add_argument('icon', help='The base icon name (e.g. hueiris)')
+
+args = parser.parse_args()
+
+item = args.item
+icon = args.icon
+
+ihue= default_inc['hue']
+isat= default_inc['saturation']
+ival= default_inc['value']
+
+if args.hue_increment:
+	ihue= args.hue_increment
+
+if args.saturation_increment:
+	isat= args.saturation_increment
+
+if args.value_increment:
+	ival= args.value_increment
+
+if ihue < 0 or ihue > 360 or 360 % ihue:
+	print('hue increment must be a proper divisor of 360', file=sys.stderr)
+	exit(1)
+
+if isat < 0 or isat > 100 or 100 % isat:
+	print('saturation increment must be a proper divisor of 100',
+		file=sys.stderr)
+	exit(1)
+
+if ival < 0 or ival > 100 or 100 % ival:
+	print('value increment must be a proper divisor of 100', file=sys.stderr)
+	exit(1)
+
+print(f"='oh:{icon}x'+ Math.round(items.{item}.state.split(',')[0]/{ihue})*{ihue}+'x'+Math.round(items.{item}.state.split(',')[1]/{isat})*{isat}+'x'+ Math.round(items.{item}.state.split(',')[2]/{ival})*{ival}")
+
